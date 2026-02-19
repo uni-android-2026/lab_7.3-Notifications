@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -24,6 +26,7 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity {
 
     public static final int NOTIFICATION_ID = 1;
+    public static final int NOTIFICATION_PROGRESS_ID = 2;
 
     private static final String CHANNEL_ID = "main_channel";
     private static final int REQ_POST_NOTIFICATIONS = 1001;
@@ -44,56 +47,98 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermissionIfNeeded();
     }
 
-    // Обработчик для android:onClick="onClick" из XML
-    public void onClick(View view) {
-        // На Android 13+ без разрешения уведомления не покажутся
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Разрешите уведомления для приложения.", Toast.LENGTH_SHORT).show();
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
-                return;
-            }
+    public void onBellClick(View view) {
+        if (!hasNotificationPermission()) {
+            askNotificationPermission();
+            return;
         }
 
-        // Intent для открытия MainActivity по нажатию на уведомление
+        PendingIntent contentIntent = buildContentPendingIntent();
+
+        // Большая иконка: лучше PNG/JPG (BitmapFactory для vector может не подойти)
+        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.bell_large);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification_small)
+                .setContentTitle("Колокольчик")
+                .setContentText("Колокольчик звенит, колокольчик зовет")
+                .setContentIntent(contentIntent)
+
+                // Из картинок:
+                .setAutoCancel(true) // удалять после нажатия
+                .setLargeIcon(largeIcon) // большая иконка
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // высокий приоритет (для < Android 8)
+                .setDefaults(NotificationCompat.DEFAULT_ALL) // звук/вибрация/свет
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC); // на экране блокировки видно полностью
+
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build());
+    }
+
+    public void onProgressClick(View view) {
+        if (!hasNotificationPermission()) {
+            askNotificationPermission();
+            return;
+        }
+
+        PendingIntent contentIntent = buildContentPendingIntent();
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification_small)
+                .setContentTitle("Колокольчик")
+                .setContentText("Подождите, идет загрузка...")
+                .setContentIntent(contentIntent)
+
+                // Уведомление с процессом (как в примере на картинке)
+                .setProgress(0, 0, true) // indeterminate progress
+                .setOngoing(true)        // «висит», пока не обновишь/удалишь
+                .setOnlyAlertOnce(true)  // при повторном notify не будет каждый раз шуметь
+
+                // Доп. параметры (можно оставить, чтобы выглядело одинаково)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+
+        // Повторное нажатие обновит это же уведомление, а не создаст новое
+        NotificationManagerCompat.from(this).notify(NOTIFICATION_PROGRESS_ID, builder.build());
+    }
+
+    private PendingIntent buildContentPendingIntent() {
         Intent resultIntent = new Intent(this, MainActivity.class);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(resultIntent);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
 
-        int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            piFlags |= PendingIntent.FLAG_IMMUTABLE;
+            flags |= PendingIntent.FLAG_IMMUTABLE;
         }
 
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, piFlags);
-
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_notification_small) // маленькая иконка уведомления
-                        .setContentTitle("Колокольчик")
-                        .setContentText("Колокольчик звенит, колокольчик зовет")
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setContentIntent(resultPendingIntent);
-        // setAutoCancel НЕ ставим — тогда уведомление не исчезает после нажатия (как в инструкции)
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        return stackBuilder.getPendingIntent(0, flags);
     }
 
     private void createNotificationChannelIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Main notifications";
             String description = "Notifications channel for demo app";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH; // чтобы «HIGH» работал и на Android 8+
 
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+            if (manager != null) manager.createNotificationChannel(channel);
+        }
+    }
+
+    private boolean hasNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true;
+        return checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(this, "Разрешите уведомления для приложения.", Toast.LENGTH_SHORT).show();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
         }
     }
 

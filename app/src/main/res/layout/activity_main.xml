@@ -8,19 +8,36 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <ImageButton
-        android:id="@+id/btnBell"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
-        android:contentDescription="Показать уведомление"
-        android:onClick="onClick"
-        android:scaleType="centerInside"
-        android:src="@drawable/bell"
-        android:background="@android:color/transparent"
-        android:padding="8dp"
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBell"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:contentDescription="Показать уведомление"
+            android:onClick="onBellClick"
+            android:scaleType="centerInside"
+            android:src="@drawable/bell"
+            android:background="@android:color/transparent"
+            android:padding="8dp" />
+
+        <Button
+            android:id="@+id/btnProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Уведомление с процессом"
+            android:layout_marginTop="18dp"
+            android:onClick="onProgressClick" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
