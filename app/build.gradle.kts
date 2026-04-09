@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "su.ioplock.notifications"
+    namespace = "org.michael.notifications"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "su.ioplock.notifications"
+        applicationId = "org.michael.notifications"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

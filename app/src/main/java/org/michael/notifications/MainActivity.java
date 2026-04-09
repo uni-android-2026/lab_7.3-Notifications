@@ -1,4 +1,4 @@
-package su.ioplock.notifications;
+package org.michael.notifications;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -60,16 +60,14 @@ public class MainActivity extends AppCompatActivity {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification_small)
-                .setContentTitle("Колокольчик")
-                .setContentText("Колокольчик звенит, колокольчик зовет")
+                .setContentTitle("Напоминание")
+                .setContentText("Проверьте новые события в приложении.")
                 .setContentIntent(contentIntent)
-
-                // Из картинок:
-                .setAutoCancel(true) // удалять после нажатия
-                .setLargeIcon(largeIcon) // большая иконка
-                .setPriority(NotificationCompat.PRIORITY_HIGH) // высокий приоритет (для < Android 8)
-                .setDefaults(NotificationCompat.DEFAULT_ALL) // звук/вибрация/свет
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC); // на экране блокировки видно полностью
+                .setAutoCancel(true)
+                .setLargeIcon(largeIcon)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build());
     }
@@ -84,20 +82,15 @@ public class MainActivity extends AppCompatActivity {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification_small)
-                .setContentTitle("Колокольчик")
-                .setContentText("Подождите, идет загрузка...")
+                .setContentTitle("Синхронизация")
+                .setContentText("Идёт обновление данных...")
                 .setContentIntent(contentIntent)
-
-                // Уведомление с процессом (как в примере на картинке)
-                .setProgress(0, 0, true) // indeterminate progress
-                .setOngoing(true)        // «висит», пока не обновишь/удалишь
-                .setOnlyAlertOnce(true)  // при повторном notify не будет каждый раз шуметь
-
-                // Доп. параметры (можно оставить, чтобы выглядело одинаково)
+                .setProgress(0, 0, true)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
-        // Повторное нажатие обновит это же уведомление, а не создаст новое
         NotificationManagerCompat.from(this).notify(NOTIFICATION_PROGRESS_ID, builder.build());
     }
 
@@ -118,9 +111,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void createNotificationChannelIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String name = "Main notifications";
-            String description = "Notifications channel for demo app";
-            int importance = NotificationManager.IMPORTANCE_HIGH; // чтобы «HIGH» работал и на Android 8+
+            String name = "Основные уведомления";
+            String description = "Канал уведомлений демонстрационного приложения";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
 
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
@@ -137,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Toast.makeText(this, "Разрешите уведомления для приложения.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Разрешите приложению показывать уведомления.", Toast.LENGTH_SHORT).show();
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_POST_NOTIFICATIONS);
         }
     }
@@ -156,9 +149,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == REQ_POST_NOTIFICATIONS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Уведомления разрешены.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Показ уведомлений разрешён.", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Без разрешения уведомления показываться не будут.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Без разрешения уведомления не будут отображаться.", Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -1,4 +1,4 @@
-package su.ioplock.notifications;
+package org.michael.notifications;
 
 import org.junit.Test;
 

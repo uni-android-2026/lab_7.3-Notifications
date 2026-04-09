@@ -23,7 +23,7 @@
             android:id="@+id/btnBell"
             android:layout_width="220dp"
             android:layout_height="220dp"
-            android:contentDescription="Показать уведомление"
+            android:contentDescription="Открыть уведомление"
             android:onClick="onBellClick"
             android:scaleType="centerInside"
             android:src="@drawable/bell"
@@ -34,7 +34,7 @@
             android:id="@+id/btnProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Уведомление с процессом"
+            android:text="Уведомление о синхронизации"
             android:layout_marginTop="18dp"
             android:onClick="onProgressClick" />
 

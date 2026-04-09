@@ -1,4 +1,4 @@
-package su.ioplock.notifications;
+package org.michael.notifications;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("su.ioplock.notifications", appContext.getPackageName());
+        assertEquals("org.michael.notifications", appContext.getPackageName());
     }
 }
